@@ -1,10 +1,10 @@
 # Tasker 📋
 > **Trello-like Board Management System** - Built with FastAPI, SQLAlchemy & Microservices Architecture
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.14.0+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green.svg)](https://fastapi.tiangolo.com)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-red.svg)](https://sqlalchemy.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue.svg)](https://postgresql.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18+-blue.svg)](https://postgresql.org)
 
 ## 🚀 Overview
 
@@ -232,6 +232,8 @@ graph TB
 ## 🛠️ Technical Stack
 
 ### Backend
+- **Python 3.14.0** - Latest Python with enhanced performance
+- **uv** - Ultra-fast Python package manager and project management tool
 - **FastAPI** - Modern, fast web framework for Python APIs
 - **SQLAlchemy 2.0** - Python SQL toolkit and ORM  
 - **PostgreSQL** - Advanced open source relational database
@@ -285,7 +287,8 @@ tasker/
 ## 🚦 Getting Started
 
 ### Prerequisites
-- Python 3.9+
+- Python 3.14.0+
+- [uv](https://docs.astral.sh/uv/) - Ultra-fast Python package manager
 - PostgreSQL 15+
 - Git
 
@@ -297,33 +300,37 @@ git clone https://github.com/farhan-nahid/tasker.git
 cd tasker
 ```
 
-2. **Set up virtual environment**
+2. **Install dependencies and set up environment**
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# uv will automatically create and manage the virtual environment
+uv sync
 ```
 
-3. **Install dependencies**
+3. **Configure database**
 ```bash
-pip install -r requirements.txt
+# Create .env file (copy from .env.example and modify as needed)
+cp .env.example .env
+
+# Example .env configuration:
+DB_USER=postgres
+DB_PASSWORD=password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=tasker
+PORT=8000
 ```
 
-4. **Configure database**
+4. **Run migrations**
 ```bash
-# Create .env file
-DATABASE_URL=postgresql://username:password@localhost:5432/tasker_db
-SECRET_KEY=your-secret-key-here
+uv run alembic upgrade head
 ```
 
-5. **Run migrations**
+5. **Start the server**
 ```bash
-alembic upgrade head
+uv run python main.py
 ```
 
-6. **Start the server**
-```bash
-uvicorn src.app:app --reload
-```
+> 💡 **Why uv?** uv is 10-100x faster than pip, automatically manages virtual environments, and provides better dependency resolution. All commands are prefixed with `uv run` to ensure you're using the project's environment.
 
 ### API Documentation
 - **Interactive Docs**: http://localhost:8000/docs
@@ -367,20 +374,15 @@ DELETE /api/v1/cards/{id}          # Archive card
 
 ### Environment Variables
 ```bash
-# Database
-DATABASE_URL=postgresql://user:pass@localhost:5432/tasker
+# Database Configuration
+DB_USER=postgres
+DB_PASSWORD=password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=tasker
 
-# Security
-SECRET_KEY=your-secret-key-here
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# File Upload
-MAX_FILE_SIZE_MB=50
-UPLOAD_PATH=/uploads
-
-# Features
-ENABLE_RATE_LIMITING=true
-ENABLE_CORS=true
+# Application
+PORT=8000
 ```
 
 ---
