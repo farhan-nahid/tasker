@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from ...responses import APIResponse
+from ...schemas import APIResponse
 from .models import WelcomeData, HealthData, StatusData
 from .controllers import get_welcome_info, get_health_status, get_system_status
 

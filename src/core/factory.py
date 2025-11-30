@@ -1,39 +1,14 @@
-"""
-FastAPI Application Factory.
-
-This module contains the application factory function that creates
-and configures the FastAPI application instance with all necessary
-middleware, error handlers, and settings.
-
-The factory pattern allows for better testing and configuration
-management by keeping the app creation logic separate from
-the route definitions.
-"""
-
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
-from .configs.database import get_db
-from .logging import configure_logging, LogLevels, logger
+from ..configs.database import get_db
+from ..utils.logging import configure_logging, LogLevels, logger
 from .error_handlers import register_error_handlers
-from .middlewares.logging_middleware import logging_middleware
-from .configs.app_vars import PORT
+from ..middlewares.logging_middleware import logging_middleware
+from ..configs.app_vars import PORT
 
 
 def create_app() -> FastAPI:
-    """
-    Create and configure the FastAPI application.
-    
-    Factory function that sets up the entire application with
-    all necessary middleware, error handlers, and configuration.
-    
-    Returns:
-        FastAPI: Configured FastAPI application instance
-        
-    Example:
-        app = create_app()
-        # App is ready to use with all middleware and handlers configured
-    """
     # Configure logging system
     configure_logging(LogLevels.INFO)
     logger.info(f"🚀 Initializing application on http://localhost:{PORT}")
@@ -66,7 +41,3 @@ def create_app() -> FastAPI:
     
     logger.info("✅ FastAPI application configured successfully")
     return app
-
-
-# Export the factory function
-__all__ = ["create_app"]

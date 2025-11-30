@@ -1,22 +1,3 @@
-"""
-Global Error Handlers for FastAPI Application.
-
-This module provides centralized error handling for all uncaught exceptions
-across the application. Similar to Express.js error middleware, these handlers
-catch exceptions thrown from any route or middleware and convert them to
-standardized JSON responses.
-
-Error Handler Types:
-1. APIError Handler: Handles custom application errors with structured format
-2. HTTP Exception Handler: Generic FastAPI HTTP exceptions
-3. Validation Handler: FastAPI request validation errors (422)
-4. Database Handler: SQLAlchemy database operation errors
-5. General Exception Handler: Catch-all for unexpected errors
-
-All handlers log errors appropriately and return consistent JSON responses
-using the standardized APIResponse format.
-"""
-
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -25,25 +6,11 @@ from typing import Union
 import traceback
 
 from .errors import APIError, DatabaseError, ValidationError
-from .responses import APIResponse
-from .logging import logger
+from ..schemas.responses import APIResponse
+from ..utils.logging import logger
 
 
 def register_error_handlers(app) -> None:
-    """
-    Register all error handlers with the FastAPI application.
-    
-    This function should be called during app initialization to set up
-    global error handling. It registers handlers in order of specificity,
-    with the most general handler last.
-    
-    Args:
-        app: FastAPI application instance
-        
-    Example:
-        app = FastAPI()
-        register_error_handlers(app)
-    """
     # Register custom API error handler (most specific)
     app.exception_handler(APIError)(api_error_handler)
     
@@ -61,30 +28,6 @@ def register_error_handlers(app) -> None:
 
 
 async def api_error_handler(request: Request, exc: APIError) -> JSONResponse:
-    """
-    Handle custom APIError exceptions.
-    
-    Processes application-specific errors that inherit from APIError.
-    These errors already contain proper formatting and status codes,
-    so they're logged and returned as-is.
-    
-    Args:
-        request (Request): FastAPI request object
-        exc (APIError): Custom API error instance
-        
-    Returns:
-        JSONResponse: Formatted error response with request context
-        
-    Example Response:
-        {
-            "success": false,
-            "message": "User not found",
-            "error_code": "NOT_FOUND", 
-            "details": {"user_id": 123},
-            "timestamp": "2025-11-30T20:15:32.123Z",
-            "request_id": "abc12345"
-        }
-    """
     # Get request context from middleware
     request_id = getattr(request.state, 'request_id', 'unknown')
     client_ip = _extract_client_ip(request)
@@ -117,26 +60,6 @@ async def api_error_handler(request: Request, exc: APIError) -> JSONResponse:
 
 
 async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
-    """
-    Handle generic FastAPI HTTP exceptions.
-    
-    Catches standard HTTP exceptions that aren't custom APIErrors.
-    This includes built-in FastAPI errors and manually raised HTTPExceptions.
-    
-    Args:
-        request (Request): FastAPI request object
-        exc (HTTPException): Standard HTTP exception
-        
-    Returns:
-        JSONResponse: Formatted HTTP error response
-        
-    Example Response:
-        {
-            "success": false,
-            "message": "Method not allowed",
-            "data": null
-        }
-    """
     # Extract client information
     client_ip = _extract_client_ip(request)
     
@@ -162,33 +85,6 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
 
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
-    """
-    Handle FastAPI request validation errors (HTTP 422).
-    
-    Processes errors when request data doesn't match expected schema
-    (missing fields, wrong types, validation constraints, etc.).
-    Formats validation errors into user-friendly messages.
-    
-    Args:
-        request (Request): FastAPI request object
-        exc (RequestValidationError): FastAPI validation error
-        
-    Returns:
-        JSONResponse: Formatted validation error response
-        
-    Example Response:
-        {
-            "success": false,
-            "message": "Request validation failed",
-            "error_code": "VALIDATION_ERROR",
-            "details": {
-                "validation_errors": [
-                    {"loc": ["body", "email"], "msg": "Invalid email format", "type": "value_error.email"}
-                ]
-            },
-            "timestamp": "2025-11-30T20:15:32.123Z"
-        }
-    """
     # Extract client information
     client_ip = _extract_client_ip(request)
     
@@ -224,29 +120,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 async def database_exception_handler(request: Request, exc: SQLAlchemyError) -> JSONResponse:
-    """
-    Handle SQLAlchemy database operation errors.
-    
-    Catches database-related errors like connection failures,
-    constraint violations, transaction rollbacks, etc.
-    Prevents exposing sensitive database details to clients.
-    
-    Args:
-        request (Request): FastAPI request object
-        exc (SQLAlchemyError): SQLAlchemy database error
-        
-    Returns:
-        JSONResponse: Generic database error response
-        
-    Example Response:
-        {
-            "success": false,
-            "message": "A database error occurred",
-            "error_code": "DATABASE_ERROR",
-            "details": {"operation": "database_operation"},
-            "timestamp": "2025-11-30T20:15:32.123Z"
-        }
-    """
     # Extract client information
     client_ip = _extract_client_ip(request)
     
@@ -274,27 +147,6 @@ async def database_exception_handler(request: Request, exc: SQLAlchemyError) -> 
 
 
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    """
-    Handle all uncaught exceptions (catch-all handler).
-    
-    This is the last resort handler for any exceptions that weren't
-    caught by more specific handlers. It prevents application crashes
-    and ensures consistent error responses.
-    
-    Args:
-        request (Request): FastAPI request object
-        exc (Exception): Any uncaught exception
-        
-    Returns:
-        JSONResponse: Generic internal server error response
-        
-    Example Response:
-        {
-            "success": false,
-            "message": "An unexpected error occurred",
-            "data": {"error_type": "ValueError"}
-        }
-    """
     # Extract client information
     client_ip = _extract_client_ip(request)
     
@@ -324,15 +176,6 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
 
 
 def _extract_client_ip(request: Request) -> str:
-    """
-    Extract client IP address with proxy header support.
-    
-    Args:
-        request (Request): FastAPI request object
-        
-    Returns:
-        str: Client IP address or "unknown" if not found
-    """
     if hasattr(request, 'client') and request.client:
         return request.client.host
     
@@ -349,22 +192,9 @@ def _extract_client_ip(request: Request) -> str:
 
 
 def _get_log_level(status_code: int) -> str:
-    """
-    Determine appropriate log level for HTTP status code.
-    
-    Args:
-        status_code (int): HTTP response status code
-        
-    Returns:
-        str: Log level ("info", "warning", or "error")
-    """
     if status_code >= 500:
         return "error"
     elif status_code >= 400:
         return "warning"
     else:
         return "info"
-
-
-# Export registration function for external use
-__all__ = ["register_error_handlers"]
