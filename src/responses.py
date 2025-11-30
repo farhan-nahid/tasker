@@ -10,12 +10,13 @@ Response Types:
 - PaginatedResponse: Response with pagination metadata for list endpoints
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Generic, TypeVar
 from pydantic import BaseModel, Field
 from datetime import datetime
 
+T = TypeVar('T')
 
-class APIResponse(BaseModel):
+class APIResponse(BaseModel, Generic[T]):
     """
     Standard API response format for all endpoints.
     
@@ -47,7 +48,7 @@ class APIResponse(BaseModel):
     message: str = Field(
         description="Human-readable description of the operation result"
     )
-    data: Optional[Any] = Field(
+    data: Optional[T] = Field(
         default=None,
         description="Optional response payload data"
     )

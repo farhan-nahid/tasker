@@ -13,3 +13,5 @@ DB_PORT: int = int(os.getenv("DB_PORT", "5432"))
 
 # Application Configuration
 PORT: int = int(os.getenv("PORT", "8000"))
+ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+LOG_LEVEL: str = os.getenv("LOG_LEVEL", "info")
