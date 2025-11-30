@@ -1,46 +1,68 @@
 from loguru import logger
 import sys
 from enum import StrEnum
+from typing import Literal
 
 
 class LogLevels(StrEnum):
     DEBUG = "DEBUG"
-    INFO = "INFO"  
+    INFO = "INFO"
     WARNING = "WARNING"
     ERROR = "ERROR"
     CRITICAL = "CRITICAL"
 
 
-def configure_logging(log_level: str = LogLevels.INFO):
+def configure_logging(
+    log_level: str = LogLevels.INFO,
+):
     """
-    Configure Loguru for simple console logging with custom format.
-    
-    Args:
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    Configure Loguru with simplified format:
+    timestamp | level | request_id | method | route | status | duration | ip | user_agent | message
     """
-    
-    # Remove default logger
+
     logger.remove()
-    
-    # Add console logger with custom format
-    # Format: timestamp | log_level | IP | method | route | response_time | message
+
+    # Format for request logs
+    request_format = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> "
+        "| <level>{level: <8}</level> "
+        "| <blue>{extra[request_id]: <10}</blue> "
+        "| <magenta>{extra[method]: <6}</magenta> "
+        "| <cyan>{extra[route]: <25}</cyan> "
+        "| <yellow>{extra[status]: <3}</yellow> "
+        "| <white>{extra[duration]: >6}ms</white> "
+        "| <green>{extra[ip]: <15}</green> "
+        "| <dim>{extra[user_agent]}</dim> "
+        "| {message}"
+    )
+
+    # Format for simple logs
+    simple_format = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> "
+        "| <level>{level: <8}</level> "
+        "| {message}"
+    )
+
+    # Console logging only
+    # Request logs with full format
     logger.add(
         sys.stdout,
         level=log_level,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[ip]: <15}</cyan> | <magenta>{extra[method]: <6}</magenta> | <blue>{extra[route]: <20}</blue> | <yellow>{extra[response_time]: >6}ms</yellow> | {message}",
-        filter=lambda record: "ip" in record["extra"],
-        colorize=True
+        format=request_format,
+        filter=lambda record: "request_id" in record["extra"],
+        colorize=True,
     )
-    
-    # Add simple logger for non-request logs (startup, database, etc.)
+
+    # Application logs with simplified format
     logger.add(
         sys.stdout,
         level=log_level,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | {message}",
-        filter=lambda record: "ip" not in record["extra"],
-        colorize=True
+        format=simple_format,
+        filter=lambda record: "request_id" not in record["extra"],
+        colorize=True,
     )
 
+    logger.info("Logging configured successfully.")
 
-# Export the configured logger for easy import
+
 __all__ = ["logger", "configure_logging", "LogLevels"]
