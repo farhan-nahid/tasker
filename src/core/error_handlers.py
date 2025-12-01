@@ -30,11 +30,11 @@ def register_error_handlers(app) -> None:
 async def api_error_handler(request: Request, exc: APIError) -> JSONResponse:
     # Get request context from middleware
     request_id = getattr(request.state, 'request_id', 'unknown')
-    client_ip = _extract_client_ip(request)
+    client_ip = extract_client_ip(request)
     user_agent = request.headers.get("user-agent", "unknown")[:25]
     
     # Determine log level based on status code
-    log_level = _get_log_level(exc.status_code)
+    log_level = get_log_level(exc.status_code)
     
     # Log the error with full context using structured logging
     logger.bind(
@@ -61,10 +61,10 @@ async def api_error_handler(request: Request, exc: APIError) -> JSONResponse:
 
 async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
     # Extract client information
-    client_ip = _extract_client_ip(request)
+    client_ip = extract_client_ip(request)
     
     # Determine log level based on status code
-    log_level = _get_log_level(exc.status_code)
+    log_level = get_log_level(exc.status_code)[0]
     
     # Log the HTTP error with context
     logger.bind(
@@ -86,7 +86,7 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     # Extract client information
-    client_ip = _extract_client_ip(request)
+    client_ip = extract_client_ip(request)
     
     # Format validation errors for better readability
     formatted_errors = []
@@ -121,7 +121,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 async def database_exception_handler(request: Request, exc: SQLAlchemyError) -> JSONResponse:
     # Extract client information
-    client_ip = _extract_client_ip(request)
+    client_ip = extract_client_ip(request)
     
     # Log the database error with full details (for internal debugging)
     logger.bind(
@@ -148,7 +148,7 @@ async def database_exception_handler(request: Request, exc: SQLAlchemyError) -> 
 
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     # Extract client information
-    client_ip = _extract_client_ip(request)
+    client_ip = extract_client_ip(request)
     
     # Log the unexpected error with full traceback for debugging
     error_trace = traceback.format_exc()
@@ -175,7 +175,7 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
     )
 
 
-def _extract_client_ip(request: Request) -> str:
+def extract_client_ip(request: Request) -> str:
     if hasattr(request, 'client') and request.client:
         return request.client.host
     
@@ -191,7 +191,7 @@ def _extract_client_ip(request: Request) -> str:
     return "unknown"
 
 
-def _get_log_level(status_code: int) -> str:
+def get_log_level(status_code: int) -> str:
     if status_code >= 500:
         return "error"
     elif status_code >= 400:

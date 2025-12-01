@@ -17,7 +17,7 @@ async def logging_middleware(
     start_time = time.time()
     
     # Extract client IP address with proxy support
-    client_ip = _extract_client_ip(request)
+    client_ip = extract_client_ip(request)
     
     # Get and truncate user agent for readability
     user_agent = request.headers.get("user-agent", "unknown")[:30]
@@ -31,7 +31,7 @@ async def logging_middleware(
         duration_ms = round(duration * 1000, 1)
         
         # Determine log level and message based on HTTP status
-        log_level, log_message = _get_log_info(response.status_code)
+        log_level, log_message = get_log_info(response.status_code)
         
         # Log request with full context using structured logging
         logger.bind(
@@ -66,7 +66,7 @@ async def logging_middleware(
         raise
 
 
-def _extract_client_ip(request: Request) -> str:
+def extract_client_ip(request: Request) -> str:
     # Try direct connection first
     if request.client:
         return request.client.host
@@ -86,7 +86,7 @@ def _extract_client_ip(request: Request) -> str:
     return "unknown"
 
 
-def _get_log_info(status_code: int) -> tuple[str, str]:
+def get_log_info(status_code: int) -> tuple[str, str]:
     if status_code >= 500:
         return "error", f"Server error: {status_code}"
     elif status_code >= 400:
