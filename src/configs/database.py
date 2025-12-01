@@ -1,5 +1,6 @@
-from typing import Annotated, Generator
+from typing import Annotated, Generator, Optional, Tuple
 from fastapi import Depends
+import time
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from urllib.parse import quote_plus
@@ -55,32 +56,24 @@ def get_db() -> Generator[Session, None, None]:
 DbSession = Annotated[Session, Depends(get_db)]
 
 
-def check_db_connection() -> None:
+def check_db_connection() -> Tuple[bool, Optional[float], Optional[str]]:
+    start_time = time.time()
+
     try:
-        import time
-        start_time = time.time()
-        
-        # Test connection with simple query
         with engine.connect() as connection:
-            result = connection.execute(text("SELECT 1"))
-            duration = time.time() - start_time
-            
-            logger.info(
-                f"Database connection successful - "
-                f"{DB_HOST}:{DB_PORT}/{DB_NAME} "
-                f"({round(duration * 1000, 1)}ms)"
-            )
-            
+            connection.execute(text("SELECT 1"))
+            duration_ms = round((time.time() - start_time) * 1000, 1)
+
+            logger.info("Database connected successfully!!")
+
+            return True, duration_ms, None
+
     except Exception as e:
-        # Handle logging import failure gracefully
+        error_msg = str(e)
+
         try:
-            logger.error(
-                f"Database connection failed - "
-                f"{DB_HOST}:{DB_PORT}/{DB_NAME} - {str(e)}"
-            )
-        except ImportError:
-            # Fallback to print if logging isn't available
-            print(f"Database connection failed: {e}")
-            
-        # Re-raise the exception for proper error handling
-        raise
+            logger.error(f"Database connection failed - {error_msg}")
+        except Exception:
+            print(f"Database connection failed: {error_msg}")
+
+        return False, None, error_msg

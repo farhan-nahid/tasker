@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 
 from ...schemas import APIResponse
-from .models import WelcomeData, HealthData, StatusData
+from ...configs.database import check_db_connection
+from .models import WelcomeData, HealthData, StatusData, DBCheckData
 from .controllers import get_welcome_info, get_health_status, get_system_status
 
 
@@ -53,3 +54,23 @@ async def get_status() -> APIResponse:
         data=status_data.model_dump()
     )
 
+
+@router.get(
+    "/db-check",
+    response_model=APIResponse[DBCheckData],
+    summary="Database Connectivity Check",
+    description="Checks if the database is reachable and returns response time"
+)
+async def db_check() -> APIResponse[DBCheckData]:
+    isConnected, durationMs, error = check_db_connection()
+
+    data = DBCheckData(
+        isConnected=isConnected,
+        durationMs=durationMs,
+        error=error
+    )
+
+    return APIResponse.success_response(
+        message="Database connectivity check executed",
+        data=data
+    )

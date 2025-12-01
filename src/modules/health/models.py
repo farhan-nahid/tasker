@@ -20,3 +20,9 @@ class StatusData(BaseModel):
     python_version: str = Field(description="Python version information")
     port: int = Field(description="Server port number")
     endpoints: Dict[str, str] = Field(description="Available API endpoints")
+
+
+class DBCheckData(BaseModel):
+    isConnected: bool = Field(description="Database connectivity status")
+    durationMs: float | None = Field(default=None, description="Duration of the connectivity check in milliseconds")
+    error: str | None = Field(default=None, description="Error message if the connectivity check failed")
