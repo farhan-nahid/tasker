@@ -17,8 +17,13 @@ class CardComment(Base):
     content = Column(Text, nullable=False)
     is_edited = Column(Boolean, default=False, nullable=False)
     
+    # Metadata
     created_at = Column(DateTime, default=func.now(), nullable=False, index=True)
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+    deleted_at = Column(DateTime, nullable=True, index=True)
+    
+    created_by = Column(UUID(as_uuid=True), nullable=False, index=True)
+    deleted_by = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     __table_args__ = (
         Index('idx_comment_card_created', 'card_id', 'created_at'),

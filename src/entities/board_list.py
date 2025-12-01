@@ -22,8 +22,14 @@ class BoardList(Base):
     is_archived = Column(Boolean, default=False, nullable=False)
     card_limit = Column(Integer, nullable=True)  # WIP limit
     
-    created_at = Column(DateTime, default=func.now(), nullable=False)
+    # Metadata
+    created_at = Column(DateTime, default=func.now(), nullable=False, index=True)
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+    deleted_at = Column(DateTime, nullable=True, index=True)
+    
+    created_by = Column(UUID(as_uuid=True), nullable=False, index=True)
+    deleted_by = Column(UUID(as_uuid=True), nullable=True, index=True)
+
     
     # Constraints
     __table_args__ = (

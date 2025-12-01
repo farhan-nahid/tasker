@@ -20,10 +20,16 @@ class CardAttachment(Base):
     file_size = Column(Integer, nullable=False)  # in bytes
     mime_type = Column(String(100), nullable=False)
     
-    uploaded_at = Column(DateTime, default=func.now(), nullable=False)
+    # Metadata
+    created_at = Column(DateTime, default=func.now(), nullable=False, index=True)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+    deleted_at = Column(DateTime, nullable=True, index=True)
+    
+    created_by = Column(UUID(as_uuid=True), nullable=False, index=True)
+    deleted_by = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     __table_args__ = (
-        Index('idx_attachment_card_uploaded', 'card_id', 'uploaded_at'),
+        Index('idx_attachment_card_uploaded', 'card_id', 'created_at'),
     )
     
     @validates('file_size')

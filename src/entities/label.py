@@ -18,7 +18,13 @@ class Label(Base):
     color = Column(String(7), nullable=False, default="#61bd4f")
     description = Column(String(500))
     
-    created_at = Column(DateTime, default=func.now(), nullable=False)
+    # Metadata
+    created_at = Column(DateTime, default=func.now(), nullable=False, index=True)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+    deleted_at = Column(DateTime, nullable=True, index=True)
+    
+    created_by = Column(UUID(as_uuid=True), nullable=False, index=True)
+    deleted_by = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     __table_args__ = (
         UniqueConstraint('board_id', 'name', name='uq_board_label_name'),

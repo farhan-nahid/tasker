@@ -3,7 +3,6 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func
 import uuid
-from datetime import datetime
 import re
 
 from ..configs.database import Base
@@ -14,7 +13,7 @@ class Board(Base):
     __tablename__ = "boards"
 
     # Primary identification
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid8, index=True)
     
     # Core board information
     name = Column(String(255), nullable=False, index=True)
@@ -47,6 +46,9 @@ class Board(Base):
     created_at = Column(DateTime, default=func.now(), nullable=False, index=True)
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
     deleted_at = Column(DateTime, nullable=True, index=True)
+    
+    created_by = Column(UUID(as_uuid=True), nullable=False, index=True)
+    deleted_by = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     # Indexes for performance
     __table_args__ = (

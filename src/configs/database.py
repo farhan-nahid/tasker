@@ -13,21 +13,11 @@ from .app_vars import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
 encoded_password = quote_plus(DB_PASS)
 
 # Construct PostgreSQL connection URL for psycopg2 driver
-DATABASE_URL = (
-    f"postgresql+psycopg2://{DB_USER}:{encoded_password}"
-    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # Create SQLAlchemy engine with optimized settings
 engine = create_engine(
     DATABASE_URL,
-    # Connection arguments for remote database support
-    connect_args={
-        "sslmode": "require",  # Force SSL for secure remote connections
-        "host": DB_HOST,       # Explicitly set host for TCP connection
-        "port": DB_PORT,       # Explicitly set port
-    },
-    # Connection pool settings
     pool_pre_ping=True,         # Validate connections before use
     pool_recycle=3600,          # Recycle connections every hour
     echo=False                  # Set to True for SQL query logging

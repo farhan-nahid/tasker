@@ -13,7 +13,13 @@ class CardLabel(Base):
     card_id = Column(UUID(as_uuid=True), nullable=False, index=True)  # Reference to Card service
     label_id = Column(UUID(as_uuid=True), nullable=False, index=True)  # Reference to Label service
     
-    created_at = Column(DateTime, default=func.now(), nullable=False)
+    # Metadata
+    created_at = Column(DateTime, default=func.now(), nullable=False, index=True)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+    deleted_at = Column(DateTime, nullable=True, index=True)
+    
+    created_by = Column(UUID(as_uuid=True), nullable=False, index=True)
+    deleted_by = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     __table_args__ = (
         UniqueConstraint('card_id', 'label_id', name='uq_card_label'),
